@@ -8,6 +8,7 @@ namespace BankTransaction.Test
     [TestFixture]
     public class BankService_Test
     {
+        private FakeBalanceStoreRepository _fakeBalanceStoreRepository;
         private Mock<IBalanceStoreRepository> _mockBalanceStoreRepository;
         private Mock<INotifyRepository> _mockNotifyRepository;
         private BankService _bankService;
@@ -15,6 +16,7 @@ namespace BankTransaction.Test
         [SetUp]
         public void Setup()
         {
+            _fakeBalanceStoreRepository = new FakeBalanceStoreRepository();
             _mockBalanceStoreRepository = new Mock<IBalanceStoreRepository>();
             _mockNotifyRepository = new Mock<INotifyRepository>();
             _bankService = new BankService(_mockBalanceStoreRepository.Object, _mockNotifyRepository.Object);
@@ -28,6 +30,25 @@ namespace BankTransaction.Test
             _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(() => balance);
             _mockBalanceStoreRepository.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
                 .Callback<decimal>(amount => balance += amount);
+
+            // Act
+            _bankService.PerformTransaction(100);
+            _bankService.PerformTransaction(50);
+            _bankService.PerformTransaction(-30);
+            _bankService.PerformTransaction(200);
+            _bankService.PerformTransaction(-100);
+
+            var finalBalance = _bankService.GetBalance();
+
+            // Assert
+            finalBalance.Should().Be(220);
+        }
+        
+        [Test]
+        public void MultipleTransactions_CorrectBalance_Another_Solution()
+        {
+            // Arrange
+            _bankService = new BankService(_fakeBalanceStoreRepository, _mockNotifyRepository.Object);
 
             // Act
             _bankService.PerformTransaction(100);
