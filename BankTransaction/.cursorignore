@@ -1,0 +1,44 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+
+# 忽略常見的非必要目錄
+node_modules/
+dist/
+build/
+.cache/
+.tmp/
+
+# 忽略日誌文件
+*.log
+
+# 忽略臨時文件
+*.tmp
+*.temp
+
+# 忽略編譯後的文件
+*.min.js
+*.min.css
+
+# 忽略系統文件
+.DS_Store
+Thumbs.db
+
+# 忽略環境配置文件
+.env
+.env.local
+
+# 忽略大型媒體文件
+*.mp4
+*.mov
+*.wav
+*.mp3
+
+# 忽略壓縮文件
+*.zip
+*.rar
+*.7z
+
+# 忽略文檔和備份文件
+*.pdf
+*.doc
+*.docx
+*.bak
