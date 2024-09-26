@@ -4,29 +4,35 @@ namespace BankTransaction.Service;
 
 public class BankService
 {
-    private readonly IBalanceStoreRepository balanceStoreRepository;
+    private readonly IBalanceStoreRepository _balanceStoreRepository;
 
-    public BankService(IBalanceStoreRepository balanceStore, IBalanceStoreRepository balanceStoreRepository)
+    public BankService(IBalanceStoreRepository balanceStoreRepository)
     {
-        this.balanceStoreRepository = balanceStoreRepository;
+        _balanceStoreRepository = balanceStoreRepository;
     }
 
     public string PerformTransaction(decimal amount)
     {
-        decimal currentBalance = balanceStoreRepository.GetBalance();
+        decimal currentBalance = _balanceStoreRepository.GetBalance();
         
-        if (amount < 0 && Math.Abs(amount) > currentBalance)
+        if (amount < 0)
         {
-            return "交易失敗：餘額不足";
+            if (Math.Abs(amount) > currentBalance)
+            {
+                return "交易失敗：餘額不足";
+            }
+            _balanceStoreRepository.UpdateBalance(amount);
+            return $"交易成功：取款 ${Math.Abs(amount)}";
         }
-
-        balanceStoreRepository.UpdateBalance(amount);
-        string transactionType = amount >= 0 ? "存款" : "取款";
-        return $"交易成功：{transactionType} ${Math.Abs(amount)}";
+        else
+        {
+            _balanceStoreRepository.UpdateBalance(amount);
+            return $"交易成功：存款 ${amount}";
+        }
     }
 
     public decimal GetBalance()
     {
-        return balanceStoreRepository.GetBalance();
+        return _balanceStoreRepository.GetBalance();
     }
 }
