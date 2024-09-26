@@ -42,6 +42,7 @@ namespace BankTransaction.Test
 
             // Assert
             finalBalance.Should().Be(220);
+            _mockNotifyRepository.Verify(m => m.SendMessage(It.IsAny<string>()), Times.Exactly(5));
         }
         
         [Test]
@@ -61,6 +62,7 @@ namespace BankTransaction.Test
 
             // Assert
             finalBalance.Should().Be(220);
+            _mockNotifyRepository.Verify(m => m.SendMessage(It.IsAny<string>()), Times.Exactly(5));
         }
 
         [Test]
