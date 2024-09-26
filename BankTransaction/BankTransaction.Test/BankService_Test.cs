@@ -1,96 +1,94 @@
-﻿using BankTransaction.Infrastructure.Enum;
-using BankTransaction.Repository.Interface;
+﻿using BankTransaction.Repository;
 using BankTransaction.Service;
+using BankTransaction.Repository.Interface;
 using FluentAssertions;
 using Moq;
-using NUnit.Framework;
 
 namespace BankTransaction.Test
 {
     [TestFixture]
     public class BankService_Test
     {
-        // Mock 對象：用於模擬和驗證與真實對象的交互
-        private Mock<IDepositRepository> _mockDepositRepository;
-        private Mock<IWithdrawRepository> _mockWithdrawRepository;
+        private Mock<IBalanceStoreRepository> _mockBalanceStore;
+        private Mock<IBalanceStoreRepository> _mockWithdrawStore;
         private BankService _bankService;
 
         [SetUp]
         public void Setup()
         {
-            // 創建 Mock 對象
-            _mockDepositRepository = new Mock<IDepositRepository>();
-            _mockWithdrawRepository = new Mock<IWithdrawRepository>();
-            // 使用 Mock 對象創建被測試的服務
-            _bankService = new BankService(_mockDepositRepository.Object, _mockWithdrawRepository.Object);
+            _mockBalanceStore = new Mock<IBalanceStoreRepository>();
+            _mockWithdrawStore = new Mock<IBalanceStoreRepository>();
+            _bankService = new BankService(_mockBalanceStore.Object, _mockWithdrawStore.Object);
         }
 
         [Test]
-        public void PerformTransaction_Deposit_Successful()
+        public void MultipleTransactions_CorrectBalance()
         {
             // Arrange
-            decimal amount = 100m;
-            // Stub：設置 Mock 對象的行為
-            _mockDepositRepository.Setup(r => r.Deposit(amount)).Returns((true, amount));
+            var initialBalance = _bankService.GetBalance();
 
             // Act
-            var result = _bankService.PerformTransaction(amount, TransactionType.Deposit);
+            _bankService.PerformTransaction(100);
+            _bankService.PerformTransaction(50);
+            _bankService.PerformTransaction(-30);
+            _bankService.PerformTransaction(200);
+            _bankService.PerformTransaction(-100);
+
+            var finalBalance = _bankService.GetBalance();
 
             // Assert
-            result.Should().Be("Transaction successful deposit $100");
-            // Mock：驗證方法是否被調用
-            _mockDepositRepository.Verify(r => r.Deposit(amount), Times.Once);
+            initialBalance.Should().Be(0);
+            finalBalance.Should().Be(220);
         }
 
         [Test]
-        public void PerformTransaction_Deposit_Failed()
+        public void Deposit_SuccessfulTransaction()
         {
-            // Arrange
-            decimal amount = 100m;
-            // Stub：設置 Mock 對象的行為
-            _mockDepositRepository.Setup(r => r.Deposit(amount)).Returns((false, 0m));
-
             // Act
-            var result = _bankService.PerformTransaction(amount, TransactionType.Deposit);
+            var result = _bankService.PerformTransaction(100);
 
             // Assert
-            result.Should().Be("Transaction failed");
-            // Mock：驗證方法是否被調用
-            _mockDepositRepository.Verify(r => r.Deposit(amount), Times.Once);
+            result.Should().Be("交易成功：存款 $100");
+            _bankService.GetBalance().Should().Be(100);
         }
 
         [Test]
-        public void PerformTransaction_Withdraw_Successful()
+        public void Withdraw_SuccessfulTransaction()
         {
             // Arrange
-            decimal amount = 50m;
-            // Stub：設置 Mock 對象的行為
-            _mockWithdrawRepository.Setup(r => r.Withdraw(amount)).Returns((true, amount));
+            _bankService.PerformTransaction(200);
 
             // Act
-            var result = _bankService.PerformTransaction(amount, TransactionType.Withdraw);
+            var result = _bankService.PerformTransaction(-50);
 
             // Assert
-            result.Should().Be("Transaction successful withdraw $50");
-            // Mock：驗證方法是否被調用
-            _mockWithdrawRepository.Verify(r => r.Withdraw(amount), Times.Once);
+            result.Should().Be("交易成功：取款 $50");
+            _bankService.GetBalance().Should().Be(150);
         }
 
         [Test]
-        public void PerformTransaction_Withdraw_Failed()
+        public void Withdraw_InsufficientFunds()
         {
             // Arrange
-            decimal amount = 50m;
-            // Stub：設置 Mock 對象的行為
-            _mockWithdrawRepository.Setup(r => r.Withdraw(amount)).Returns((false, 0m));
+            _bankService.PerformTransaction(100);
 
             // Act
-            var result = _bankService.PerformTransaction(amount, TransactionType.Withdraw);
+            var result = _bankService.PerformTransaction(-150);
 
             // Assert
-            result.Should().Be("Transaction failed");
-            // Mock：驗證方法是否被調用
-            _mockWithdrawRepository.Verify(r => r.Withdraw(amount), Times.Once);
+            result.Should().Be("交易失敗：餘額不足");
+            _bankService.GetBalance().Should().Be(100);
+        }
+
+        [Test]
+        public void ZeroAmountTransaction_NoEffect()
+        {
+            // Act
+            var result = _bankService.PerformTransaction(0);
+
+            // Assert
+            result.Should().Be("交易成功：存款 $0");
+            _bankService.GetBalance().Should().Be(0);
         }
     }
 }

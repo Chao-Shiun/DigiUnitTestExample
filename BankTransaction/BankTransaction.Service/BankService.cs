@@ -1,37 +1,32 @@
-﻿using BankTransaction.Infrastructure.Enum;
-using BankTransaction.Repository.Interface;
+﻿using BankTransaction.Repository.Interface;
 
 namespace BankTransaction.Service;
 
 public class BankService
 {
-    private readonly IDepositRepository _depositRepository;
-    private readonly IWithdrawRepository _withdrawRepository;
+    private readonly IBalanceStoreRepository balanceStoreRepository;
 
-    public BankService(IDepositRepository depositRepository, IWithdrawRepository withdrawRepository)
+    public BankService(IBalanceStoreRepository balanceStore, IBalanceStoreRepository balanceStoreRepository)
     {
-        _depositRepository = depositRepository;
-        _withdrawRepository = withdrawRepository;
+        this.balanceStoreRepository = balanceStoreRepository;
     }
 
-
-    public string PerformTransaction(decimal amount, TransactionType transactionType)
+    public string PerformTransaction(decimal amount)
     {
-        bool isSuccess = false;
-        string? transactionMsg = null;
-        switch (transactionType)
+        decimal currentBalance = balanceStoreRepository.GetBalance();
+        
+        if (amount < 0 && Math.Abs(amount) > currentBalance)
         {
-            case TransactionType.Deposit:
-                (isSuccess, decimal depositAmount) = _depositRepository.Deposit(amount);
-                transactionMsg = $"deposit ${depositAmount}";
-                break;
-            case TransactionType.Withdraw:
-                (isSuccess, decimal withdrawAmount) = _withdrawRepository.Withdraw(amount);
-                transactionMsg = $"withdraw ${withdrawAmount}"; // 將 "deposit" 改為 "withdraw"
-                break;
+            return "交易失敗：餘額不足";
         }
 
+        balanceStoreRepository.UpdateBalance(amount);
+        string transactionType = amount >= 0 ? "存款" : "取款";
+        return $"交易成功：{transactionType} ${Math.Abs(amount)}";
+    }
 
-        return isSuccess ? $"Transaction successful {transactionMsg}" : "Transaction failed";
+    public decimal GetBalance()
+    {
+        return balanceStoreRepository.GetBalance();
     }
 }

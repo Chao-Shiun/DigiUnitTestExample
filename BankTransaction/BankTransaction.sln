@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankTransaction", "BankTransaction.csproj", "{26C6E518-4A55-4767-A908-9E5E891CA3C9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankTransaction.Service", "BankTransaction.Service\BankTransaction.Service.csproj", "{A15F4464-00CA-4762-B072-711744692DDE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankTransaction.Repository", "BankTransaction.Repository\BankTransaction.Repository.csproj", "{D17A4906-0498-492B-A669-57722962081A}"
@@ -16,10 +14,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{26C6E518-4A55-4767-A908-9E5E891CA3C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26C6E518-4A55-4767-A908-9E5E891CA3C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26C6E518-4A55-4767-A908-9E5E891CA3C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26C6E518-4A55-4767-A908-9E5E891CA3C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A15F4464-00CA-4762-B072-711744692DDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A15F4464-00CA-4762-B072-711744692DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A15F4464-00CA-4762-B072-711744692DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
