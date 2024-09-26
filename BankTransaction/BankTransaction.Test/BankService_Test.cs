@@ -17,7 +17,7 @@ namespace BankTransaction.Test
         {
             _mockBalanceStoreRepository = new Mock<IBalanceStoreRepository>();
             _mockNotifyRepository = new Mock<INotifyRepository>();
-            _bankService = new BankService(_mockBalanceStoreRepository.Object,_mockNotifyRepository.Object);
+            _bankService = new BankService(_mockBalanceStoreRepository.Object, _mockNotifyRepository.Object);
         }
 
         [Test]
@@ -102,6 +102,36 @@ namespace BankTransaction.Test
             result.Should().Be("交易成功：存款 $0");
             _bankService.GetBalance().Should().Be(0);
             _mockBalanceStoreRepository.Verify(m => m.UpdateBalance(0), Times.Once);
+        }
+
+        [Test]
+        public void NotifyRepository_CalledOnTransaction()
+        {
+            // Arrange
+            decimal balance = 0;
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(() => balance);
+            _mockBalanceStoreRepository.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
+                .Callback<decimal>(amount => balance += amount);
+
+            // Act
+            _bankService.PerformTransaction(100);
+
+            // Assert
+            _mockNotifyRepository.Verify(m => m.SendMessage("交易成功：存款 $100"), Times.Once);
+        }
+
+        [Test]
+        public void NotifyRepository_NotCalledOnFailedTransaction()
+        {
+            // Arrange
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(50);
+
+            // Act
+            var result = _bankService.PerformTransaction(-100);
+
+            // Assert
+            result.Should().Be("交易失敗：餘額不足");
+            _mockNotifyRepository.Verify(m => m.SendMessage(It.IsAny<string>()), Times.Never);
         }
     }
 }
