@@ -8,14 +8,16 @@ namespace BankTransaction.Test
     [TestFixture]
     public class BankService_Test
     {
-        private Mock<IBalanceStoreRepository> _mockBalanceStore;
+        private Mock<IBalanceStoreRepository> _mockBalanceStoreRepository;
+        private Mock<INotifyRepository> _mockNotifyRepository;
         private BankService _bankService;
 
         [SetUp]
         public void Setup()
         {
-            _mockBalanceStore = new Mock<IBalanceStoreRepository>();
-            _bankService = new BankService(_mockBalanceStore.Object);
+            _mockBalanceStoreRepository = new Mock<IBalanceStoreRepository>();
+            _mockNotifyRepository = new Mock<INotifyRepository>();
+            _bankService = new BankService(_mockBalanceStoreRepository.Object,_mockNotifyRepository.Object);
         }
 
         [Test]
@@ -23,8 +25,8 @@ namespace BankTransaction.Test
         {
             // Arrange
             decimal balance = 0;
-            _mockBalanceStore.Setup(m => m.GetBalance()).Returns(() => balance);
-            _mockBalanceStore.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(() => balance);
+            _mockBalanceStoreRepository.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
                 .Callback<decimal>(amount => balance += amount);
 
             // Act
@@ -45,8 +47,8 @@ namespace BankTransaction.Test
         {
             // Arrange
             decimal balance = 0;
-            _mockBalanceStore.Setup(m => m.GetBalance()).Returns(() => balance);
-            _mockBalanceStore.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(() => balance);
+            _mockBalanceStoreRepository.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
                 .Callback<decimal>(amount => balance += amount);
 
             // Act
@@ -61,9 +63,9 @@ namespace BankTransaction.Test
         public void Withdraw_SuccessfulTransaction()
         {
             // Arrange
-            _mockBalanceStore.Setup(m => m.GetBalance()).Returns(200);
-            _mockBalanceStore.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
-                .Callback<decimal>(amount => _mockBalanceStore.Setup(m => m.GetBalance()).Returns(200 + amount));
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(200);
+            _mockBalanceStoreRepository.Setup(m => m.UpdateBalance(It.IsAny<decimal>()))
+                .Callback<decimal>(amount => _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(200 + amount));
 
             // Act
             var result = _bankService.PerformTransaction(-50);
@@ -77,7 +79,7 @@ namespace BankTransaction.Test
         public void Withdraw_InsufficientFunds()
         {
             // Arrange
-            _mockBalanceStore.Setup(m => m.GetBalance()).Returns(100);
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(100);
 
             // Act
             var result = _bankService.PerformTransaction(-150);
@@ -91,7 +93,7 @@ namespace BankTransaction.Test
         public void ZeroAmountTransaction_NoEffect()
         {
             // Arrange
-            _mockBalanceStore.Setup(m => m.GetBalance()).Returns(0);
+            _mockBalanceStoreRepository.Setup(m => m.GetBalance()).Returns(0);
 
             // Act
             var result = _bankService.PerformTransaction(0);
@@ -99,7 +101,7 @@ namespace BankTransaction.Test
             // Assert
             result.Should().Be("交易成功：存款 $0");
             _bankService.GetBalance().Should().Be(0);
-            _mockBalanceStore.Verify(m => m.UpdateBalance(0), Times.Once);
+            _mockBalanceStoreRepository.Verify(m => m.UpdateBalance(0), Times.Once);
         }
     }
 }
